@@ -23,7 +23,7 @@ import MySQLdb.cursors
 
 from scrapy import log
 
-class tongjiproPipeline(object):
+#class tongjiproPipeline(object):
                           
 #    def __init__(self):
 #        self.conn=None
@@ -50,6 +50,7 @@ class tongjiproPipeline(object):
 
 ########################
                           
+class tongjiproPipeline(object):
     def initialize(self):
         if path.exists(self.filename):
             self.conn=sqlite3.connect(self.filename)
@@ -68,7 +69,9 @@ class tongjiproPipeline(object):
         conn.commit()
         return conn
                           
+ 
 ############
+ 
     def __init__(self):
         self.dbpool = adbapi.ConnectionPool('MySQLdb', db='jibenditu',
                 user='root', passwd='', cursorclass=MySQLdb.cursors.DictCursor,
@@ -84,17 +87,22 @@ class tongjiproPipeline(object):
     def _conditional_insert(self, tx, item):
         # create record if doesn't exist. 
         # all this block run on it's own thread
-        tx.execute("select * from ditu where link = %s", (item['link'][0], ))
+        tx.execute("select * from ditu where link = %s", (item['link'], ))
         result = tx.fetchone()
         if result:
             log.msg("Item already stored in db: %s" % item, level=log.DEBUG)
         else:
             tx.execute("insert into ditu (id,link,title,addtime) "
                 "values (%s, %s,%s,%s)",
-                (item['id'],item['link'][0],item['title'][0],
+                (item['id'],item['link'],item['title'],
                  datetime.datetime.now())
             )
             log.msg("Item stored in db: %s" % item, level=log.DEBUG)
  
     def handle_error(self, e):
         log.err(e)
+ 
+ 
+ 
+ 
+ 
