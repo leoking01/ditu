@@ -57,13 +57,18 @@ class fjsenSpider(CrawlSpider):
 
         #province = sel.xpath('//tr[@class=\'provincetr\']/td/a/text()').extract()
         #省(直辖市) >> 市(直辖区,) >> 区 >> 镇(街道) >> 村
-        county = sel.xpath('//tr[@class=\'provincetr\']/td/a/text() | //tr[@class=\'citytr\']/td[position()=2]/a/text() | //tr[@class=\'contytr\']/td[position()=2]/a/text() | //tr[@class=\'towntr\']/td[position()=2]/a/text() | //tr[@class=\'villagetr\']/td[position()=3]/text()').extract()
+        county = sel.xpath('//tr[@class=\'provincetr\']/td/a/text() | //tr[@class=\'citytr\']/td[position()=2]/a/text() | //tr[@class=\'countytr\']/td[position()=2]/a/text() | //tr[@class=\'towntr\']/td[position()=2]/a/text() | //tr[@class=\'villagetr\']/td[position()=3]/text()').extract()
+        
+        code = sel.xpath('//tr[@class=\'provincetr\']/td/a/@herf | //tr[@class=\'citytr\']/td[position()=1]/a/text() | //tr[@class=\'countytr\']/td[position()=1]/a/text() | //tr[@class=\'towntr\']/td[position()=1]/a/text() | //tr[@class=\'villagetr\']/td[position()=1]/text()').extract()
+        
         #town = sel.xpath('//tr[@class=\'towntr\']/td/a/text()').extract()
         #village = sel.xpath('//tr[@class=\'villagetr\']/td/a/text()').extract()
 
         #print 'titles = ',province
         #item['title'] = sel.xpath('//tr[@class=\'provincetr\']/td/a/text()').extract()[0]
         item['title']=county and county[0] or ''
+        item['code']=code and code[0] or ''
+        
         #print 'oooooooooo',county
 
         #province_links = sel.xpath('//tr[@class=\'provincetr\']/td/a/@href').extract()

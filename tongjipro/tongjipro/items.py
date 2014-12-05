@@ -12,6 +12,7 @@ class tongjiproItem(Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     id=Field()
+    code=Field()
     title=Field()
     link=Field()
     addtime=Field()

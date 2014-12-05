@@ -92,9 +92,9 @@ class tongjiproPipeline(object):
         if result:
             log.msg("Item already stored in db: %s" % item, level=log.DEBUG)
         else:
-            tx.execute("insert into ditu (id,link,title,addtime) "
-                "values (%s, %s,%s,%s)",
-                (item['id'],item['link'],item['title'],
+            tx.execute("insert into ditu (id,code,title,link,addtime) "
+                "values (%s, %s,%s,%s,%s)",
+                (item['id'],item['code'],item['title'],item['link'],
                  datetime.datetime.now())
             )
             log.msg("Item stored in db: %s" % item, level=log.DEBUG)
