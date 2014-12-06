@@ -6,9 +6,9 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 
-class fjsenPipeline(object):
-    def process_item(self, item, spider):
-        return item
+#class fjsenPipeline(object):
+#    def process_item(self, item, spider):
+#        return item
 # Define your item pipelines here
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -87,12 +87,12 @@ class tongjiproPipeline(object):
     def _conditional_insert(self, tx, item):
         # create record if doesn't exist. 
         # all this block run on it's own thread
-        tx.execute("select * from ditu where link = %s", (item['link'], ))
+        tx.execute("select * from ditu3 where link = %s", (item['link'], ))
         result = tx.fetchone()
         if result:
             log.msg("Item already stored in db: %s" % item, level=log.DEBUG)
         else:
-            tx.execute("insert into ditu (id,code,title,link,addtime) "
+            tx.execute("insert into ditu3 (id,code,title,link,addtime) "
                 "values (%s, %s,%s,%s,%s)",
                 (item['id'],item['code'],item['title'],item['link'],
                  datetime.datetime.now())
