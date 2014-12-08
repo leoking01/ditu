@@ -13,8 +13,8 @@ from tongjipro.items import tongjiproItem
 import datetime
 add=0##province 的起点=0 总数31  净数=31
 add_ci = 31##city  的起点=31  累计总数376=31+8+337  总数337+8  净数=337  8市直辖市数的二倍,因为还有县
-add_cou =376 #county 的起点 376,净数=  1038
-add_t = 1414 ##town 的起点 1414  
+add_cou =376 #county 的起点即累计数 376,净数=  1038
+add_t = 9246 ##town 的起点 1414  累计总数9246
 add_v = 13002 ##village 的起点 13002
 
 
@@ -64,6 +64,7 @@ class provinceSpider(CrawlSpider):
 class citySpider(CrawlSpider):
     name="city"
     allowed_domains=['stats.gov.cn']
+    ##city起点.参数x.
     start_urls=['http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'.html'for x in range(11,66) ] ##city 起点
 
     def parse(self,response):
@@ -86,7 +87,12 @@ class citySpider(CrawlSpider):
 class countySpider(CrawlSpider):
     name="county"
     allowed_domains=['stats.gov.cn']
-    start_urls=['http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(x)+str(y)+'.html'for x in range(11,66) for y in range(01,40) ] ##city 起点
+    ##需要修改y
+    start_urls=[
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(x)+'0'+str(y)+'.html' and\
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(x)+str(y1)+'.html'\
+        for x in range(10,66)for y in range(0,9) for y1 in range(9,40)
+    ] ##city 起点
     def parse(self,response):
         hxs=HtmlXPathSelector(response)
         sites=hxs.select('//tr[@class=\'countytr\']')
@@ -108,7 +114,17 @@ class townSpider(CrawlSpider):
     name="town"
     allowed_domains=['stats.gov.cn']
     #town 起点
-    start_urls=['http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(y)+'/'+str(x)+str(y)+str(z)+'.html'for x in range(11,66) for y in range(01,40)for z in range(0,40) ] 
+    ##需要修改z
+    start_urls=[
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+'0'+str(y1)+'/'+str(x)+'0'+str(y1)+'0'+str(z1)+'.html'and\
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(y2)+'/'+str(x)+str(y2)+'0'+str(z1)+'.html' and\
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+'0'+str(y1)+'/'+str(x)+'0'+str(y1)+str(z2)+'.html'and\
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(y2)+'/'+str(x)+str(y2)+str(z2)+'.html'\
+        for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)  for y2 in range(9,25)  for z2 in range(9,25)
+        #for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)  for y2 in range(9,25)  for z2 in range(25,35)
+        #for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)  for y2 in range(25,35)  for z2 in range(9,25)
+        #for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)  for y2 in range(25,35)  for z2 in range(25,35)
+    ] 
 
     def parse(self,response):
         hxs=HtmlXPathSelector(response)
@@ -131,7 +147,27 @@ class villegeSpider(CrawlSpider):
     name="villege"
     allowed_domains=['stats.gov.cn']
     #town 起点
-    start_urls=['http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'++str(y)+'/'+str(z)+'/'+(str(x)+str(y)+str(z))+str(u)+'.html'for x in range(11,66) for y in range(01,40)for z in range(0,40) for u in range(01,999) ] 
+    ##需要修改u
+    start_urls=[
+        ##111
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+'0'+str(y1)+'/'+'0'+str(z1)+'/'+str(x)+'0'+str(y1)+'0'+str(z1)+'0'+str(u1)+'.html' and \
+        ##211
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(y2)+'/'+'0'+str(z1)+'/'+str(x)+str(y2)+'0'+str(z1)+'0'+str(u1)+'.html' and \
+        ##121
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+'0'+str(y1)+'/'+str(z2)+'/'+str(x)+'0'+str(y1)+str(z2)+'0'+str(u1)+'.html' and \
+        ##221
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(y2)+'/'+str(z2)+'/'+str(x)+str(y2)+str(z2)+'0'+str(u1)+'.html' and  \
+        ##112
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+'0'+str(y1)+'/'+'0'+str(z1)+'/'+str(x)+'0'+str(y1)+'0'+str(z1)+str(u2)+'.html'and \
+        ##212
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(y2)+'/'+'0'+str(z1)+'/'+str(x)+str(y2)+'0'+str(z1)+str(u2)+'.html'  \
+        ##122
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+'0'+str(y1)+'/'+str(z2)+'/'+str(x)+'0'+str(y1)+str(z2)+str(u2)+'.html'  \
+        ##222
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(y2)+'/'+str(z2)+'/'+str(x)+str(y2)+str(z2)+str(u2)+'.html'  \
+        for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)for u1 in range(0,9)for y2 in range(9,15)for z2 in range(9,15)for u2 in range(9,15)
+
+    ] 
 
     def parse(self,response):
         hxs=HtmlXPathSelector(response)
