@@ -51,55 +51,71 @@ from scrapy import log
 ########################
                           
 class tongjiproPipeline(object):
-    def initialize(self):
-        if path.exists(self.filename):
-            self.conn=sqlite3.connect(self.filename)
-        else:
-            self.conn=self.create_table(self.filename)
                           
-    def finalize(self):
-        if self.conn is not None:
-            self.conn.commit()
-            self.conn.close()
-            self.conn=None
+#    def initialize(self):
+#        if path.exists(self.filename):
+#            self.conn=sqlite3.connect(self.filename)
+#        else:
+#            self.conn=self.create_table(self.filename)
                           
-    def create_table(self,filename):
-        conn=sqlite3.connect(filename)
-        conn.execute("""create table ditu(id integer primary key autoincrement,title text,link text,addtime text)""")
-        conn.commit()
-        return conn
+#    def finalize(self):
+#        if self.conn is not None:
+#            self.conn.commit()
+#            self.conn.close()
+#            self.conn=None
+                          
+#    def create_table(self,filename):
+#        conn=sqlite3.connect(filename)
+#        conn.execute("""create table ditu3_test(id integer primary key autoincrement,title text,link text,addtime text)""")
+#        conn.commit()
+#        return conn
                           
  
 ############
  
     def __init__(self):
+        print '111111111111111'
         self.dbpool = adbapi.ConnectionPool('MySQLdb', db='jibenditu',
                 user='root', passwd='', cursorclass=MySQLdb.cursors.DictCursor,
                 charset='utf8', use_unicode=True)
+        print '111111111111111------------'
  
     def process_item(self, item, spider):
         # run db query in thread pool
+        print '222222222222222'
         query = self.dbpool.runInteraction(self._conditional_insert, item)
         query.addErrback(self.handle_error)
  
         return item
  
     def _conditional_insert(self, tx, item):
+        print '333333333333333'
         # create record if doesn't exist. 
         # all this block run on it's own thread
-        tx.execute("select * from ditu3 where link = %s", (item['link'], ))
+        #tx.execute("select * from ditu3_test where link = %s", (item['link'][0], ))
+        tx.execute("select * from ditu3_test where title = %s", (item['title'], ))
+        print '/////3333'
         result = tx.fetchone()
+        print '#######333333333333333'
         if result:
+            print 'failure========'
             log.msg("Item already stored in db: %s" % item, level=log.DEBUG)
         else:
-            tx.execute("insert into ditu3 (id,code,title,link,addtime) "
-                "values (%s, %s,%s,%s,%s)",
-                (item['id'],item['code'],item['title'],item['link'],
-                 datetime.datetime.now())
+            print 'ok##############3='
+            #tx.execute("insert into ditu3_test (code,title,link,addtime) "
+            #    "values ( %s,%s,%s,%s)",
+            #    (item['code'],item['title'],item['link'],
+            #     datetime.datetime.now())
+            tx.execute("insert into ditu3_test (title,link) "
+                "values (%s,%s)",
+                (item['title'],item['link'])
             )
+#                 datetime.datetime.now())
+            print 'ok========'
             log.msg("Item stored in db: %s" % item, level=log.DEBUG)
  
     def handle_error(self, e):
+        print '4444444444444444'
         log.err(e)
  
  

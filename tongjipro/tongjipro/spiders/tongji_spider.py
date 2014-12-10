@@ -1,5 +1,4 @@
 #-*- coding: utf-8 -*-
-import sys
 from urlparse import urljoin
 from scrapy.http import Request
 
@@ -9,55 +8,70 @@ from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 
 from tongjipro.items import tongjiproItem
+import scrapy
 
+import sys
 import datetime
-add=0##province 的起点=0 总数31  净数=31
-add_ci = 31##city  的起点=31  累计总数376=31+8+337  总数337+8  净数=337  8市直辖市数的二倍,因为还有县
-add_cou =376 #county 的起点即累计数 376,净数=  1038
-add_t = 9246 ##town 的起点 1414  累计总数9246
-add_v = 13002 ##village 的起点 13002
-
+#add=0##province 的起点=0 总数31  净数=31
+#add_ci = 31##city  的起点=31  累计总数376=31+8+337  总数337+8  净数=337  8市直辖市数的二倍,因为还有县
+#add_cou =376 #county 的起点即累计数 376,净数=  1038
+#add_t = 9246 ##town 的起点 1414  累计总数9246
+#add_v = 13002 ##village 的起点 13002
 
 sys.stdout = open('output.txt','w');
 
-
-
 #################### parse province ########################
-#class fjsenSpider(BaseSpider):
-class provinceSpider(CrawlSpider):
-    name="province"
+#class provinceSpider(CrawlSpider):
+class dituSpider(CrawlSpider):
+    name="ditu"
     allowed_domains=['stats.gov.cn']
-    start_urls=['http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013','parse']  ##  province起点
-    #url=['http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013']
-    #start_urls=['http://www.fjsen.com/j/node_94962_'+str(x)+'.htm' for x in range(2,11)]+['http://www.fjsen.com/j/node_94962.htm']
-    rules = [
-            #Rule(SgmlLinkExtractor(allow=['/.']),),
-            #Rule(SgmlLinkExtractor(allow=['/.'+str(x)+'.html'for x in range(11,65) ] ),'parse_city'  ),
-            #Rule(SgmlLinkExtractor(allow=['/.*'+'.*'+'.html'])),
-            #Rule(SgmlLinkExtractor(allow=['/.*.html']),callback='parse_item',follow='false')
-            #Rule(SgmlLinkExtractor(allow=['/.html']),callback='parse_item',follow='false')
-    ]
+    start_urls=[
+        'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/',
+        ]  ##  province起点
+    url_0 = 'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'
+
 
     def parse(self,response):
-        global add
-        hxs=HtmlXPathSelector(response)
-        sites=hxs.select('//tr[@class=\'provincetr\']/td')
-        items=[]
-        for site in sites:
-            item=tongjiproItem()
-            add+=1
-            item['id']=add
-            item['code']=site.select('a/@href').extract()
-            item['title']=site.select('a/text()').extract()
-            item['link']=site.select('a/@href').extract()
-            #item['link']=response.url
-            #item['addtime']=site.select('span/text()').extract()
-            item['addtime']=site.select('a/@href').extract()
-            items.append(item)
+        sel=Selector(response)
+        items = []
+        sites = sel.xpath('//tr[@class=\'provincetr\']')
+        sites_t = sites.xpath('//td')
+        for site in sites_t:#.xpath('//td/a/@herf').extract():
+            title=site.xpath('a/text()').extract()
+            link=site.xpath('a/@href').extract()
+            print '$$$$$$$ title=',title,' link=',link
+            #yield tongjiproItem(link=link,title=title,addtime=datetime.datetime.now())
+            yield tongjiproItem(link=link,title=title)
+
+#    def parse_item(self,response):
+        sel=Selector(response)
+        sites = sel.xpath('//tr[@class=\'provincetr\']')
+        for sub_url in sites.xpath('//td/a/@href').extract():
+            url = 'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+ str(sub_url)
+            #url = start_urls[0]+str(sub_url)
+            print '========= url= ',url
+            yield scrapy.Request(url, callback=self.parse)
+
+#            codes = sel.xpath('//tr[@class=\'provincetr\']//td/a/@herf | //tr[@class=\'citytr\']/td[position()=1]/a/text() | //tr[@class=\'countytr\']/td[position()=1]/a/text() | //tr[@class=\'towntr\']/td[position()=1]/a/text() | //tr[@class=\'villagetr\']/td[position()=1]/text()').extract()
+#            titles = sel.xpath('//tr[@class=\'provincetr\']//td/a/text() | //tr[@class=\'citytr\']/td[position()=2]/a/text() | //tr[@class=\'countytr\']/td[position()=2]/a/text() | //tr[@class=\'towntr\']/td[position()=2]/a/text() | //tr[@class=\'villagetr\']/td[position()=3]/text()').extract()
+#            links = sel.xpath('//tr[@class=\'provincetr\']//td/a/@href | //tr[@class=\'citytr\']/td[position()=1]/a/@href | //tr[@class=\'countytr\']/td[position()=1]/a/@href | //tr[@class=\'towntr\']/td[position()=1]/a/@href | //tr[@class=\'villagetr\']/td[position()=1]/@href ').extract()
+#        for site in sites:
+#            item=tongjiproItem()
+#            add+=1
+#            item['id']=add
+#            item['code']=site.select('a/@href').extract()
+#            item['title']=site.select('a/text()').extract()
+#            item['link']=site.select('a/@href').extract()
+#            item['addtime']=site.select('a/@href').extract()
+#            items.append(item)
         #collect `item_urls`
         #for item_url in item_urls:
         #    yield Request(url=item_url, callback=self.parse_item)
-        return items
+#        return items
+
+#            code = sel.xpath('//tr[@class=\'provincetr\']//td/a/@herf | //tr[@class=\'citytr\']/td[position()=1]/a/text() | //tr[@class=\'countytr\']/td[position()=1]/a/text() | //tr[@class=\'towntr\']/td[position()=1]/a/text() | //tr[@class=\'villagetr\']/td[position()=1]/text()').extract()
+#            title = sel.xpath('//tr[@class=\'provincetr\']//td/a/text() | //tr[@class=\'citytr\']/td[position()=2]/a/text() | //tr[@class=\'countytr\']/td[position()=2]/a/text() | //tr[@class=\'towntr\']/td[position()=2]/a/text() | //tr[@class=\'villagetr\']/td[position()=3]/text()').extract()
+#            link=sel.xpath('//tr[@class=\'provincetr\']//td/a/@href | //tr[@class=\'citytr\']/td[position()=1]/a/@href | //tr[@class=\'countytr\']/td[position()=1]/a/text() | //tr[@class=\'towntr\']/td[position()=1]/a/@href | //tr[@class=\'villagetr\']/td[position()=1]/@href ').extract()
 
 
 ##################### parse city  ######################
@@ -91,7 +105,8 @@ class countySpider(CrawlSpider):
     start_urls=[
         'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(x)+'0'+str(y)+'.html' and\
         'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(x)+str(y1)+'.html'\
-        for x in range(10,66)for y in range(0,9) for y1 in range(9,40)
+        #for x in range(10,66)for y in range(0,9) for y1 in range(9,40)
+        for x in range(10,66)for y in range(0,1) for y1 in range(9,11)
     ] ##city 起点
     def parse(self,response):
         hxs=HtmlXPathSelector(response)
@@ -120,7 +135,8 @@ class townSpider(CrawlSpider):
         'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(y2)+'/'+str(x)+str(y2)+'0'+str(z1)+'.html' and\
         'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+'0'+str(y1)+'/'+str(x)+'0'+str(y1)+str(z2)+'.html'and\
         'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(y2)+'/'+str(x)+str(y2)+str(z2)+'.html'\
-        for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)  for y2 in range(9,25)  for z2 in range(9,25)
+        for x in range(11,66) for y1 in range(0,1)for z1 in range(0,1)  for y2 in range(9,11)  for z2 in range(9,11)
+        #for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)  for y2 in range(9,35)  for z2 in range(9,35)
         #for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)  for y2 in range(9,25)  for z2 in range(25,35)
         #for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)  for y2 in range(25,35)  for z2 in range(9,25)
         #for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)  for y2 in range(25,35)  for z2 in range(25,35)
@@ -165,7 +181,8 @@ class villegeSpider(CrawlSpider):
         'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+'0'+str(y1)+'/'+str(z2)+'/'+str(x)+'0'+str(y1)+str(z2)+str(u2)+'.html'  \
         ##222
         'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+str(x)+'/'+str(y2)+'/'+str(z2)+'/'+str(x)+str(y2)+str(z2)+str(u2)+'.html'  \
-        for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)for u1 in range(0,9)for y2 in range(9,15)for z2 in range(9,15)for u2 in range(9,15)
+        #for x in range(11,66) for y1 in range(0,9)for z1 in range(0,9)for u1 in range(0,9)for y2 in range(9,15)for z2 in range(9,15)for u2 in range(9,15)
+        for x in range(11,66) for y1 in range(0,1)for z1 in range(0,1)for u1 in range(0,1)for y2 in range(9,11)for z2 in range(9,11)for u2 in range(9,11)
 
     ] 
 
