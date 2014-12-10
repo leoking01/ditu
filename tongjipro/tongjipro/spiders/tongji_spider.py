@@ -12,6 +12,7 @@ import scrapy
 
 import sys
 import datetime
+#import join
 #add=0##province 的起点=0 总数31  净数=31
 #add_ci = 31##city  的起点=31  累计总数376=31+8+337  总数337+8  净数=337  8市直辖市数的二倍,因为还有县
 #add_cou =376 #county 的起点即累计数 376,净数=  1038
@@ -19,6 +20,7 @@ import datetime
 #add_v = 13002 ##village 的起点 13002
 
 sys.stdout = open('output.txt','w');
+###########################################################  ditu start  ###################################################
 
 #################### parse province ########################
 #class provinceSpider(CrawlSpider):
@@ -34,23 +36,30 @@ class dituSpider(CrawlSpider):
     def parse(self,response):
         sel=Selector(response)
         items = []
+        #sites = sel.xpath('//tr[@class=\'provincetr\'] | //tr[@class=\'citytr\']|//tr[@class=\'countytr\'] |/tr[@class=\'towntr\']|tr[@class=\'villagetr\'] ')
         sites = sel.xpath('//tr[@class=\'provincetr\']')
         sites_t = sites.xpath('//td')
-        for site in sites_t:#.xpath('//td/a/@herf').extract():
+        ##项 item
+        for site in sites_t:
+            code=site.xpath('a/@href').extract()
             title=site.xpath('a/text()').extract()
+            degree=1
+            pcode=site.xpath('a/@href').extract()
             link=site.xpath('a/@href').extract()
             print '$$$$$$$ title=',title,' link=',link
-            #yield tongjiproItem(link=link,title=title,addtime=datetime.datetime.now())
-            yield tongjiproItem(link=link,title=title)
+            link='/'.join(link)
+            link = 'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+link
+            print 'newnewnew title=',title,' link=',link
+            yield tongjiproItem(degree=degree,code=code,pcode=pcode,link=link,title=title)
 
-#    def parse_item(self,response):
-        sel=Selector(response)
-        sites = sel.xpath('//tr[@class=\'provincetr\']')
+        ##链接
         for sub_url in sites.xpath('//td/a/@href').extract():
             url = 'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/'+ str(sub_url)
-            #url = start_urls[0]+str(sub_url)
-            print '========= url= ',url
+            print '999999========= url= ',url
             yield scrapy.Request(url, callback=self.parse)
+
+
+
 
 #            codes = sel.xpath('//tr[@class=\'provincetr\']//td/a/@herf | //tr[@class=\'citytr\']/td[position()=1]/a/text() | //tr[@class=\'countytr\']/td[position()=1]/a/text() | //tr[@class=\'towntr\']/td[position()=1]/a/text() | //tr[@class=\'villagetr\']/td[position()=1]/text()').extract()
 #            titles = sel.xpath('//tr[@class=\'provincetr\']//td/a/text() | //tr[@class=\'citytr\']/td[position()=2]/a/text() | //tr[@class=\'countytr\']/td[position()=2]/a/text() | //tr[@class=\'towntr\']/td[position()=2]/a/text() | //tr[@class=\'villagetr\']/td[position()=3]/text()').extract()
@@ -73,6 +82,7 @@ class dituSpider(CrawlSpider):
 #            title = sel.xpath('//tr[@class=\'provincetr\']//td/a/text() | //tr[@class=\'citytr\']/td[position()=2]/a/text() | //tr[@class=\'countytr\']/td[position()=2]/a/text() | //tr[@class=\'towntr\']/td[position()=2]/a/text() | //tr[@class=\'villagetr\']/td[position()=3]/text()').extract()
 #            link=sel.xpath('//tr[@class=\'provincetr\']//td/a/@href | //tr[@class=\'citytr\']/td[position()=1]/a/@href | //tr[@class=\'countytr\']/td[position()=1]/a/text() | //tr[@class=\'towntr\']/td[position()=1]/a/@href | //tr[@class=\'villagetr\']/td[position()=1]/@href ').extract()
 
+##########################################################   ditu finish ###############################################
 
 ##################### parse city  ######################
 class citySpider(CrawlSpider):

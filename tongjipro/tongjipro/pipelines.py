@@ -93,11 +93,12 @@ class tongjiproPipeline(object):
         # create record if doesn't exist. 
         # all this block run on it's own thread
         #tx.execute("select * from ditu3_test where link = %s", (item['link'][0], ))
-        tx.execute("select * from ditu3_test where title = %s", (item['title'], ))
+        tx.execute("select * from ditu3_test where title = %s", (item['title'][0], ))
+        #tx.execute("select * from ditu3_test where 1=1")
         print '/////3333'
         result = tx.fetchone()
         print '#######333333333333333'
-        if result:
+        if  result:
             print 'failure========'
             log.msg("Item already stored in db: %s" % item, level=log.DEBUG)
         else:
@@ -106,16 +107,18 @@ class tongjiproPipeline(object):
             #    "values ( %s,%s,%s,%s)",
             #    (item['code'],item['title'],item['link'],
             #     datetime.datetime.now())
-            tx.execute("insert into ditu3_test (title,link) "
-                "values (%s,%s)",
-                (item['title'],item['link'])
+            tx.execute("insert into ditu3_test (code,title,degree,pcode,link,addtime) "
+                "values (%s,%s,%s,%s,%s,%s)",
+                (item['code'],item['title'],item['degree'],item['pcode'],item['link'],
+                 datetime.datetime.now())
             )
 #                 datetime.datetime.now())
             print 'ok========'
             log.msg("Item stored in db: %s" % item, level=log.DEBUG)
+        print '#######44444444444444444'
  
     def handle_error(self, e):
-        print '4444444444444444'
+        print '55555555555555555'
         log.err(e)
  
  
